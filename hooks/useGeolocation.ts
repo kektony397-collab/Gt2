@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { GeolocationState } from '../types';
 import { useAppStore } from '../store';
@@ -20,7 +19,7 @@ export const useGeolocation = () => {
   });
   const watchIdRef = useRef<number | null>(null);
 
-  const handleSuccess: PositionCallback = (position) => {
+  const handleSuccess: PositionCallback = useCallback((position) => {
     // Here you would integrate a Kalman filter for smoothing
     // const smoothedCoords = kalmanFilter.update(position.coords);
     
@@ -42,9 +41,9 @@ export const useGeolocation = () => {
         totalDistanceKm: (prev) => prev.totalDistanceKm + (speedKmh / 3600), // distance = speed * time (1s)
     });
 
-  };
+  }, [updateBikeState]);
 
-  const handleError: PositionErrorCallback = (error) => {
+  const handleError: PositionErrorCallback = useCallback((error) => {
     setGeoState((prev) => ({
       ...prev,
       isTracking: false,
@@ -53,7 +52,7 @@ export const useGeolocation = () => {
     if (error.code === error.PERMISSION_DENIED) {
         setGeoState((prev) => ({ ...prev, hasPermission: false }));
     }
-  };
+  }, []);
 
   const startTracking = useCallback(() => {
     if (!geoState.isAvailable) {
@@ -78,7 +77,7 @@ export const useGeolocation = () => {
             setGeoState((prev) => ({...prev, hasPermission: permissionStatus.state === 'granted'}));
         };
     });
-  }, [geoState.isAvailable, updateBikeState]);
+  }, [geoState.isAvailable, handleError, handleSuccess]);
 
   const stopTracking = useCallback(() => {
     if (watchIdRef.current !== null) {

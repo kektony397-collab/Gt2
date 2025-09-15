@@ -1,8 +1,12 @@
 import React from 'react';
-// FIX: Correctly import FixedSizeList as a named export from react-window.
-import { FixedSizeList as List } from 'react-window';
+// FIX: Use a namespace import for react-window to resolve build errors
+// with the CDN module format, as named imports are failing.
+import * as ReactWindow from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import type { RefuelRecord } from '../../../types';
+
+// Access FixedSizeList from the namespace and alias it to 'List'
+const List = (ReactWindow as any).FixedSizeList;
 
 interface HistoryListProps {
   records: RefuelRecord[];
@@ -32,6 +36,17 @@ const Row: React.FC<{ index: number, style: React.CSSProperties, data: RefuelRec
 const HistoryList: React.FC<HistoryListProps> = ({ records }) => {
     // Sort records descending by timestamp
     const sortedRecords = [...records].sort((a, b) => b.timestamp - a.timestamp);
+
+  // Add a guard in case the import fails silently and List is undefined.
+  if (!List) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-red-400 text-center">
+          Error: The list component failed to load.<br/>This might be a CDN or module loading issue.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full">

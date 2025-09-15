@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useAppStore } from '../../store';
 import { useGeolocation } from '../../hooks/useGeolocation';
@@ -13,14 +12,13 @@ const DashboardPage: React.FC = () => {
     const { startTracking, stopTracking } = useGeolocation();
     const updateBikeState = useAppStore((state) => state.updateBikeState);
     const { speedKmh, totalDistanceKm } = useAppStore((state) => state.bikeState);
-    const { estimatedRangeKm } = useFuelCalculator();
+    const { estimatedRangeKm, fuelPercentage } = useFuelCalculator();
     
     // In a real app, you'd have a button to start/stop a trip
     useEffect(() => {
         startTracking();
         return () => stopTracking();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [startTracking, stopTracking]);
 
     return (
         <div className="flex flex-col h-full gap-4">
@@ -32,7 +30,7 @@ const DashboardPage: React.FC = () => {
                 </div>
                 
                 <div className="col-span-1 bg-brand-surface rounded-2xl p-4 flex flex-col items-center justify-center">
-                   <FuelGauge fuelPercentage={75} />
+                   <FuelGauge fuelPercentage={fuelPercentage} />
                 </div>
 
                 <div className="col-span-1 bg-brand-surface rounded-2xl p-4 flex flex-col items-center justify-center">
