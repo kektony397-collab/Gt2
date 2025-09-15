@@ -31,10 +31,11 @@ export const useGeolocation = () => {
     
     const speedKmh = position.coords.speed ? position.coords.speed * 3.6 : 0;
     
-    updateBikeState({
+    // FIX: The updater logic was incorrect. It should be a single function that returns a partial state object.
+    updateBikeState((prev) => ({
         speedKmh: speedKmh,
-        totalDistanceKm: (prev) => prev.totalDistanceKm + (speedKmh / 3600), // distance = speed * time (assuming 1s ticks)
-    });
+        totalDistanceKm: prev.totalDistanceKm + (speedKmh / 3600), // distance = speed * time (assuming 1s ticks)
+    }));
 
   }, [updateBikeState]);
 

@@ -1,4 +1,3 @@
-
 import type { StateCreator } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AppState } from './index';
@@ -20,21 +19,29 @@ const sampleRefuelHistory: RefuelRecord[] = [
     { id: 5, timestamp: 1674259200000, liters: 12.9, cost: 22.00, odometer: 12050, isPartial: false },
 ];
 
-export const createHistorySlice: StateCreator<AppState, [], [], HistorySlice> = (set) => ({
-    ...persist<HistorySlice>(
-        (set) => ({
-            refuelHistory: sampleRefuelHistory,
-            tripHistory: [],
-            addRefuelRecord: (record) => set((state) => ({
-                refuelHistory: [...state.refuelHistory, { ...record, id: record.id || Date.now() }],
-            })),
-            addTripLog: (log) => set((state) => ({
-                tripHistory: [...state.tripHistory, log],
-            })),
-        }),
-        {
-            name: 'smart-bike-history',
-            storage: dexieStorage,
-        }
-    )(set, (state) => state, {} as any),
+
+// FIX: Corrected StateCreator middleware typings and explicitly typed the initializer
+// to solve type inference issues with `persist` on a slice.
+const historyCreator: StateCreator<AppState, [], [], HistorySlice> = (set) => ({
+    refuelHistory: sampleRefuelHistory,
+    tripHistory: [],
+    addRefuelRecord: (record) => set((state) => ({
+        refuelHistory: [...state.refuelHistory, { ...record, id: record.id || Date.now() }],
+    })),
+    addTripLog: (log) => set((state) => ({
+        tripHistory: [...state.tripHistory, log],
+    })),
 });
+
+export const createHistorySlice: StateCreator<
+    AppState,
+    [], // Mps (middlewares for set/get) should be empty for a slice expecting vanilla args
+    [['zustand/persist', unknown]], // Mcs (middlewares for the creator) is where `persist` belongs
+    HistorySlice
+> = persist(
+    historyCreator,
+    {
+        name: 'smart-bike-history',
+        storage: dexieStorage,
+    }
+);

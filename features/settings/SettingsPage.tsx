@@ -33,7 +33,10 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ currentSettings, onSave }) 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormState(prev => ({ ...prev, [name]: name === 'unitSystem' ? value : Number(value) || value }));
+        // FIX: Ensure numeric fields are correctly handled as numbers.
+        // Number('') correctly evaluates to 0, which is a safe default.
+        const isNumeric = e.target.getAttribute('type') === 'number';
+        setFormState(prev => ({ ...prev, [name]: isNumeric ? Number(value) : value }));
     };
     
     const handleSubmit = (e: React.FormEvent) => {
@@ -50,12 +53,12 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ currentSettings, onSave }) 
 
             <div>
                 <label htmlFor="tankCapacityLiters" className="block text-sm font-medium text-brand-text-secondary">Tank Capacity (Liters)</label>
-                <input type="number" name="tankCapacityLiters" id="tankCapacityLiters" value={formState.tankCapacityLiters} onChange={handleChange} className="mt-1 block w-full bg-brand-bg border border-brand-primary/30 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-primary focus:border-brand-primary" />
+                <input type="number" step="0.1" name="tankCapacityLiters" id="tankCapacityLiters" value={formState.tankCapacityLiters} onChange={handleChange} className="mt-1 block w-full bg-brand-bg border border-brand-primary/30 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-primary focus:border-brand-primary" />
             </div>
             
             <div>
                 <label htmlFor="avgConsumptionLitersPer100Km" className="block text-sm font-medium text-brand-text-secondary">Avg. Fuel Consumption (L/100km)</label>
-                <input type="number" name="avgConsumptionLitersPer100Km" id="avgConsumptionLitersPer100Km" value={formState.avgConsumptionLitersPer100Km} onChange={handleChange} className="mt-1 block w-full bg-brand-bg border border-brand-primary/30 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-primary focus:border-brand-primary" />
+                <input type="number" step="0.1" name="avgConsumptionLitersPer100Km" id="avgConsumptionLitersPer100Km" value={formState.avgConsumptionLitersPer100Km} onChange={handleChange} className="mt-1 block w-full bg-brand-bg border border-brand-primary/30 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-primary focus:border-brand-primary" />
             </div>
             
              <div>
