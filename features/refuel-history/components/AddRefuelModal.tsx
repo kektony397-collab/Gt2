@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppStore } from '../../../store';
 import { parseRefuelText } from '../../../services/geminiService';
@@ -10,6 +9,7 @@ interface AddRefuelModalProps {
 
 const AddRefuelModal: React.FC<AddRefuelModalProps> = ({ isOpen, onClose }) => {
   const [text, setText] = useState('');
+  const [isPartial, setIsPartial] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const addRefuelRecord = useAppStore((state) => state.addRefuelRecord);
@@ -17,6 +17,13 @@ const AddRefuelModal: React.FC<AddRefuelModalProps> = ({ isOpen, onClose }) => {
 
 
   if (!isOpen) return null;
+  
+  const handleClose = () => {
+      setText('');
+      setIsPartial(false);
+      setError(null);
+      onClose();
+  }
 
   const handleSubmit = async () => {
     if (!text) return;
@@ -32,13 +39,12 @@ const AddRefuelModal: React.FC<AddRefuelModalProps> = ({ isOpen, onClose }) => {
         id: Date.now(),
         timestamp: Date.now(),
         odometer: Math.round(totalDistanceKm), // Using current odometer from state
-        isPartial: false, // AI could potentially determine this
+        isPartial: isPartial,
         ...parsedData,
       };
       
       addRefuelRecord(newRecord); // Optimistic UI update
-      onClose();
-      setText('');
+      handleClose();
 
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred.");
@@ -48,7 +54,7 @@ const AddRefuelModal: React.FC<AddRefuelModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm" onClick={handleClose}>
       <div className="bg-brand-surface rounded-2xl p-6 w-full max-w-sm m-4 shadow-lg border border-brand-primary/20" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold text-brand-primary mb-4">Log Refuel with AI</h2>
         <p className="text-sm text-brand-text-secondary mb-4">
@@ -61,9 +67,22 @@ const AddRefuelModal: React.FC<AddRefuelModalProps> = ({ isOpen, onClose }) => {
           className="w-full h-24 bg-brand-bg p-2 rounded-lg border border-brand-primary/30 focus:ring-2 focus:ring-brand-primary focus:outline-none transition-all"
           disabled={isLoading}
         />
+        
+        <div className="mt-4">
+            <label className="flex items-center text-brand-text-secondary">
+                <input
+                    type="checkbox"
+                    checked={isPartial}
+                    onChange={(e) => setIsPartial(e.target.checked)}
+                    className="h-4 w-4 rounded bg-brand-bg border-brand-primary/50 text-brand-primary focus:ring-brand-primary"
+                />
+                <span className="ml-2 text-sm">Is this a partial fill-up?</span>
+            </label>
+        </div>
+
         {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
         <div className="flex justify-end gap-4 mt-6">
-          <button onClick={onClose} className="text-brand-text-secondary font-semibold py-2 px-4 rounded-lg">Cancel</button>
+          <button onClick={handleClose} className="text-brand-text-secondary font-semibold py-2 px-4 rounded-lg">Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={isLoading || !text}

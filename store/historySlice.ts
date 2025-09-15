@@ -20,26 +20,23 @@ const sampleRefuelHistory: RefuelRecord[] = [
 ];
 
 
-// FIX: Corrected StateCreator middleware typings and explicitly typed the initializer
-// to solve type inference issues with `persist` on a slice.
-const historyCreator: StateCreator<AppState, [], [], HistorySlice> = (set) => ({
-    refuelHistory: sampleRefuelHistory,
-    tripHistory: [],
-    addRefuelRecord: (record) => set((state) => ({
-        refuelHistory: [...state.refuelHistory, { ...record, id: record.id || Date.now() }],
-    })),
-    addTripLog: (log) => set((state) => ({
-        tripHistory: [...state.tripHistory, log],
-    })),
-});
-
+// FIX: Corrected Zustand persist middleware typings. By inlining the state creator function directly into the `persist` call, we allow TypeScript to correctly infer the types for the middleware-enhanced `set` function, resolving the type mismatch error.
 export const createHistorySlice: StateCreator<
     AppState,
-    [], // Mps (middlewares for set/get) should be empty for a slice expecting vanilla args
-    [['zustand/persist', unknown]], // Mcs (middlewares for the creator) is where `persist` belongs
+    [],
+    [['zustand/persist', unknown]],
     HistorySlice
 > = persist(
-    historyCreator,
+    (set) => ({
+        refuelHistory: sampleRefuelHistory,
+        tripHistory: [],
+        addRefuelRecord: (record) => set((state) => ({
+            refuelHistory: [...state.refuelHistory, { ...record, id: record.id || Date.now() }],
+        })),
+        addTripLog: (log) => set((state) => ({
+            tripHistory: [...state.tripHistory, log],
+        })),
+    }),
     {
         name: 'smart-bike-history',
         storage: dexieStorage,

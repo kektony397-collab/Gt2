@@ -17,20 +17,17 @@ const defaultSettings: Settings = {
     unitSystem: 'metric',
 };
 
-// FIX: Corrected StateCreator middleware typings and explicitly typed the initializer
-// to solve type inference issues with `persist` on a slice.
-const settingsCreator: StateCreator<AppState, [], [], SettingsSlice> = (set) => ({
-    settings: defaultSettings,
-    setSettings: (settings) => set({ settings }),
-});
-
+// FIX: Corrected Zustand persist middleware typings. By inlining the state creator function directly into the `persist` call, we allow TypeScript to correctly infer the types for the middleware-enhanced `set` function, resolving the type mismatch error.
 export const createSettingsSlice: StateCreator<
     AppState,
-    [], // Mps (middlewares for set/get) should be empty for a slice expecting vanilla args
-    [['zustand/persist', unknown]], // Mcs (middlewares for the creator) is where `persist` belongs
+    [],
+    [['zustand/persist', unknown]],
     SettingsSlice
 > = persist(
-    settingsCreator,
+    (set) => ({
+        settings: defaultSettings,
+        setSettings: (settings) => set({ settings }),
+    }),
     {
         name: 'smart-bike-settings',
         storage: dexieStorage,

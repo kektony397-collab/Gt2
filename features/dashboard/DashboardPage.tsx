@@ -43,6 +43,13 @@ const DashboardPage: React.FC = () => {
                 </button>
             </div>
             
+            {geoState.error && (
+                <div className="bg-red-900/50 border border-red-500 text-red-300 p-3 rounded-lg text-sm">
+                    <p className="font-bold">GPS Error:</p>
+                    <p>{geoState.error.message}</p>
+                </div>
+            )}
+
             <div className="flex-grow grid grid-cols-2 grid-rows-3 gap-4">
                 <div className="col-span-2 row-span-2 bg-brand-surface rounded-2xl p-4 flex items-center justify-center">
                     <Speedometer speed={speedKmh} />
