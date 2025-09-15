@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-ag" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Bike Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-bg': '#0D0F18',
+              'brand-surface': '#1A1D2A',
+              'brand-primary': '#00F6FF',
+              'brand-secondary': '#FF00E5',
+              'brand-accent': '#00FF85',
+              'brand-text-primary': '#E0E1EC',
+              'brand-text-secondary': '#8A8FA6',
+            },
+            fontFamily: {
+              'sans': ['Inter', 'sans-serif'],
+              'mono': ['Roboto Mono', 'monospace'],
+            },
+            boxShadow: {
+              'glow-primary': '0 0 15px rgba(0, 246, 255, 0.5)',
+              'glow-secondary': '0 0 15px rgba(255, 0, 229, 0.5)',
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "dexie": "https://aistudiocdn.com/dexie@^4.2.0",
+    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/",
+    "zustand": "https://aistudiocdn.com/zustand@^5.0.8",
+    "react-window": "https://aistudiocdn.com/react-window@^2.1.0",
+    "react-virtualized-auto-sizer": "https://aistudiocdn.com/react-virtualized-auto-sizer@^1.0.26"
+  }
+}
+</script>
+</head>
+  <body class="bg-brand-bg text-brand-text-primary">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
