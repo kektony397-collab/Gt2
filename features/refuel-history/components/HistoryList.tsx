@@ -1,5 +1,5 @@
-
 import React from 'react';
+// FIX: Correctly import FixedSizeList as a named export from react-window.
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import type { RefuelRecord } from '../../../types';
