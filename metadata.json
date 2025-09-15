@@ -1,5 +1,7 @@
 {
   "name": "Copy of Smart Bike Dashboard",
   "description": "A futuristic, offline-first Progressive Web App for motorcyclists, providing real-time trip data, fuel tracking, and AI-powered insights using the Gemini API. Features include a live dashboard, natural language refuel logging, and predictive maintenance reminders.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

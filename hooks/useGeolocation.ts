@@ -19,26 +19,21 @@ export const useGeolocation = () => {
   });
   const watchIdRef = useRef<number | null>(null);
 
+  // Define stable callbacks for success and error
   const handleSuccess: PositionCallback = useCallback((position) => {
-    // Here you would integrate a Kalman filter for smoothing
-    // const smoothedCoords = kalmanFilter.update(position.coords);
-    
     setGeoState((prev) => ({
       ...prev,
       isTracking: true,
+      hasPermission: true, // If we get a success, we must have permission
       coords: position.coords,
       error: null,
     }));
     
-    // Convert speed from m/s to km/h
     const speedKmh = position.coords.speed ? position.coords.speed * 3.6 : 0;
     
     updateBikeState({
         speedKmh: speedKmh,
-        // Distance calculation should be more sophisticated, this is a simplification
-        // It should accumulate distance between points.
-        // For now, let's just increment it for demonstration.
-        totalDistanceKm: (prev) => prev.totalDistanceKm + (speedKmh / 3600), // distance = speed * time (1s)
+        totalDistanceKm: (prev) => prev.totalDistanceKm + (speedKmh / 3600), // distance = speed * time (assuming 1s ticks)
     });
 
   }, [updateBikeState]);
@@ -47,38 +42,54 @@ export const useGeolocation = () => {
     setGeoState((prev) => ({
       ...prev,
       isTracking: false,
+      hasPermission: error.code !== error.PERMISSION_DENIED ? prev.hasPermission : false,
       error: error,
     }));
-    if (error.code === error.PERMISSION_DENIED) {
-        setGeoState((prev) => ({ ...prev, hasPermission: false }));
-    }
   }, []);
 
+  // Effect to monitor permission changes from the Permissions API
+  // This updates the UI if the user changes permissions in browser settings.
+  useEffect(() => {
+    if (!geoState.isAvailable) return;
+
+    let permissionStatus: PermissionStatus;
+
+    const queryPermissions = async () => {
+        try {
+            permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+            setGeoState(prev => ({...prev, hasPermission: permissionStatus.state === 'granted'}));
+            permissionStatus.onchange = () => {
+                 setGeoState(prev => ({...prev, hasPermission: permissionStatus.state === 'granted'}));
+            };
+        } catch (e) {
+            console.error("Could not query geolocation permissions:", e);
+        }
+    }
+    queryPermissions();
+
+    return () => {
+        if (permissionStatus) {
+            permissionStatus.onchange = null;
+        }
+    };
+  }, [geoState.isAvailable]);
+
+
+  // Stable function to start tracking, preventing re-render loops
   const startTracking = useCallback(() => {
-    if (!geoState.isAvailable) {
-      console.warn('Geolocation is not available on this device.');
+    if (!geoState.isAvailable || watchIdRef.current !== null) {
       return;
     }
     
-    navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
-        setGeoState((prev) => ({...prev, hasPermission: permissionStatus.state === 'granted'}));
-        
-        if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
-            if (watchIdRef.current === null) {
-                watchIdRef.current = navigator.geolocation.watchPosition(
-                    handleSuccess,
-                    handleError,
-                    GEOLOCATION_OPTIONS
-                );
-            }
-        }
-        
-        permissionStatus.onchange = () => {
-            setGeoState((prev) => ({...prev, hasPermission: permissionStatus.state === 'granted'}));
-        };
-    });
-  }, [geoState.isAvailable, handleError, handleSuccess]);
+    // This call will trigger the browser's permission prompt if needed
+    watchIdRef.current = navigator.geolocation.watchPosition(
+        handleSuccess,
+        handleError,
+        GEOLOCATION_OPTIONS
+    );
+  }, [geoState.isAvailable, handleSuccess, handleError]);
 
+  // Stable function to stop tracking
   const stopTracking = useCallback(() => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
@@ -91,7 +102,6 @@ export const useGeolocation = () => {
   useEffect(() => {
       return () => stopTracking();
   }, [stopTracking]);
-
 
   return { geoState, startTracking, stopTracking };
 };
